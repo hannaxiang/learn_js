@@ -1,1 +1,1 @@
-Learn javascript for fun!
+Learn javascript for fun! Yeah!
