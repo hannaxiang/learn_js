@@ -1,0 +1,156 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>SVG and D3</title>
+    <!-- this loads the D3 library from your local disk. Put d3.min.js in the
+    same folder as your .html file -->
+    <script type="text/javascript" src="d3.min.js"></script>
+  </head>
+  <body>
+    <!-- comments that are in the HTML (not inside the script tag) use this
+    funny format with lots of dashes and arrows -->
+    <script>
+      'use strict';
+
+      // comments inside the <script> tag are JavaScript
+      // comments, not HTML comments
+
+      // we declare a variable here in global scope because we want
+      // the button click handlers below to 'see' it (see <button> tags below)
+      // myD3 will be an object and we will call functions on the object
+      // in the 'onclick' handlers
+      let myD3;
+
+      // window is a global object that contains useful functions
+      // setting the window's onload property to a function will cause the function
+      // to be executed after the window has loaded all of the HTML page.
+      // We want to wait until the svg element is loaded before we select it
+      // with D3!
+      window.onload = function () {
+        let w = 500; // width of the svg
+        let h = 100; // height of the svg
+        let scaleY = 4.0; // a factor to scale the data
+        let barPadding = 1; // number of pixels for padding between bars
+
+        // select the svg element (below here in the html look for <svg>)
+        // and set the width and height
+        let svg = d3.select("svg")
+          .attr('width', w)
+          .attr('height', h);
+
+        // this is our data
+        let dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+          11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
+
+        // There actually are no rectangles when we first call selectAll().
+        // If you look at the <svg> tag below you will see there is nothing inside of it.
+        // Don't worry too much about that, because the call to '.enter()'
+        // followed by 'append('rect')' will create all the rectangles we need
+        svg.selectAll('rect')
+          // this tells D3 the data array we want to to work with
+          .data(dataset)
+          // enter returns a D3 object containing all the data for which there
+          // is no rect yet (which means, at first, all of the data)
+          .enter()
+          // for each of the dataset items, we'll add a rectangle
+          // INSIDE the svg element - you can see this in the inspector
+          // then we will set attributes of the rectangle to give it size and location
+          .append('rect')
+          // we will set the 'x' and 'width' first
+          // these determine the left position of the rectangle (x)
+          // x with the width determines the right side
+          // for each new rectangle provide a function to space them apart by 21 units
+          .attr("x", function (d, i) {
+              // the argument d is the data item from the dataset array
+              // hint: when we are spacing the bars...do we care about the data value?
+              // the argument i is the index of that item (first is zero)
+              return i * (w / dataset.length);
+          })
+          // the width should be a constant that is one unit less than the spacing
+          // D3 can take a constant for an attribute when you don't want a function
+          .attr("width", w / dataset.length - barPadding)
+          // next we will set the 'y' and 'height'
+          // calculating y - the top of the rectangle - is a little bit tricky
+          // unlike a plot, the y axis in svg starts with zero AT THE top
+          // (so 0,0 means the top left of the svg element that contains the rectangles)
+          // so when you compute the top, you need to compute the distance down
+          // from the top of the svg element that contains the rectangle
+          // I would also like you to scale the rectangle based on the scaleY factor above
+          // so your function for the 'y' attribute should:
+          //  1. scale the data
+          //  2. return the height of the svg element minus the scaled value
+          .attr("y", function (d) {
+            // the argument d is the datum
+            // note that we do not use the argument i because the index is irrelevant
+            return h - (d * scaleY);   //Height minus data value
+           })
+          // calculating the height should be easy, because you needed it for
+          // calculating y
+          .attr("height", function (d) {
+            return d * scaleY;  //Scale up data value by multiplying scaleY
+          });
+
+        function changeTheColor(color) {
+          d3.select('svg')
+            .selectAll('rect')
+            //.attr("fill", color);
+
+          // extra credit
+          // can you change .attr("fill", color);
+          // so that if the value of the datum is > 20
+          // then the color will be changed, otherwise it will be black?
+          // it would look like this:
+          .attr("fill", function (d) {
+             if (d > 20) {
+               return color;
+             }
+          });
+        }
+        
+        function changeTheScale(scale) {
+          d3.select('svg')
+            .selectAll('rect') 
+            .attr("fill", "black")
+            .attr("height", function (d) {
+              return d * scale;  //change the scale as specified
+            })
+            .attr("y", function (d) {
+              return h - (d * scale);   //Height minus data value
+            });
+        }
+        
+        // myD3 is an object we create using an 'object literal'
+        // it has two properties
+        // each property is a function
+        myD3 = {
+          makeItRed : function () {
+            changeTheColor("red");
+          },
+          makeItGreen : function () {
+            changeTheColor("green");
+          },
+          // super extra credit
+          // can you add a property that is a function
+          // that changes the scale to 3.2?
+          changeScaleY : function () {
+            changeTheScale(3.2);
+          },
+        }
+      };
+
+    </script>
+
+    <!-- this is the svg element. an svg element is actually an svg document
+    embedded inside the HTML. svg documents have different elements in them than
+    standard HTML - like rectangles, circles, paths and other drawing types -->
+    <svg>
+    </svg>
+
+    <!-- the 'onclick' handler for a button can just be a little javascript
+    snippet, so we can simply call a function that is a property of the
+    'myD3' object because it is in global scope! -->
+    <button onclick="myD3.makeItRed()">Make it Red!</button>
+    <button onclick="myD3.makeItGreen()">Make it Green!</button>
+    <button onclick="myD3.changeScaleY()">Change Scale to 3.2!</button>
+  </body>
+<html>
